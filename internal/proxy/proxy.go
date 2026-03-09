@@ -25,7 +25,7 @@ func NewProxy(targetBase string) *httputil.ReverseProxy {
 		ErrorHandler: func(w http.ResponseWriter, r *http.Request, err error) {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusBadGateway)
-			w.Write([]byte(`{"error":"service unavailable"}`))
+			w.Write([]byte(`{"code":"SYSTEM_UNAVAILABLE","message":"服务暂时不可用，请稍后重试"}`))
 		},
 	}
 }

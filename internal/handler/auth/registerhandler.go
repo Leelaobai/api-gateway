@@ -12,7 +12,7 @@ func RegisterHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 		if !svcCtx.AuthRateLimiter.Check(r) {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusTooManyRequests)
-			w.Write([]byte(`{"error":"too many requests"}`))
+			w.Write([]byte(`{"code":"RATE_LIMIT_EXCEEDED","message":"操作过于频繁，请稍后再试"}`))
 			return
 		}
 		proxy.Forward(svcCtx.UserProxy, w, r, "")

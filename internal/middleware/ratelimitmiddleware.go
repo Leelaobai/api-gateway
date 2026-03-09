@@ -26,7 +26,7 @@ func (m *RateLimitMiddleware) Handle(next http.HandlerFunc) http.HandlerFunc {
 		if code == limit.OverQuota || code == limit.HitQuota {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusTooManyRequests)
-			w.Write([]byte(`{"error":"too many requests"}`))
+			w.Write([]byte(`{"code":"RATE_LIMIT_EXCEEDED","message":"操作过于频繁，请稍后再试"}`))
 			return
 		}
 		next(w, r)
