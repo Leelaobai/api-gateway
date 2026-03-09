@@ -1,0 +1,112 @@
+syntax = "v1"
+
+// ===== 公共类型 =====
+type (
+	ProxyReq  {}
+	ProxyResp  {}
+)
+
+// ===== 无需 JWT 的路由（注册/登录） =====
+@server (
+	prefix: /api/v1
+	group:  auth
+)
+service gateway-api {
+	@doc "注册"
+	@handler Register
+	post /auth/register (ProxyReq) returns (ProxyResp)
+
+	@doc "登录"
+	@handler Login
+	post /auth/login (ProxyReq) returns (ProxyResp)
+}
+
+// ===== 需要 JWT 的路由 =====
+@server (
+	prefix:     /api/v1
+	jwt:        Auth
+	middleware: RateLimit
+	group:      vehicle
+)
+service gateway-api {
+	@doc "座驾型号列表"
+	@handler GetVehicleModels
+	get /vehicles/models (ProxyReq) returns (ProxyResp)
+
+	@doc "选择座驾"
+	@handler SelectVehicle
+	post /vehicles (ProxyReq) returns (ProxyResp)
+
+	@doc "我的座驾"
+	@handler GetMyVehicle
+	get /vehicles/mine (ProxyReq) returns (ProxyResp)
+}
+
+@server (
+	prefix:     /api/v1
+	jwt:        Auth
+	middleware: RateLimit
+	group:      user
+)
+service gateway-api {
+	@doc "当前用户信息"
+	@handler GetMe
+	get /users/me (ProxyReq) returns (ProxyResp)
+
+	@doc "用户骑行统计"
+	@handler GetStats
+	get /users/me/stats (ProxyReq) returns (ProxyResp)
+}
+
+@server (
+	prefix:     /api/v1
+	jwt:        Auth
+	middleware: RateLimit
+	group:      ride
+)
+service gateway-api {
+	@doc "开始骑行"
+	@handler StartRide
+	post /rides (ProxyReq) returns (ProxyResp)
+
+	@doc "暂停骑行"
+	@handler PauseRide
+	post /rides/:id/pause (ProxyReq) returns (ProxyResp)
+
+	@doc "继续骑行"
+	@handler ResumeRide
+	post /rides/:id/resume (ProxyReq) returns (ProxyResp)
+
+	@doc "结束骑行"
+	@handler FinishRide
+	post /rides/:id/finish (ProxyReq) returns (ProxyResp)
+
+	@doc "上传轨迹点"
+	@handler UploadPoints
+	post /rides/:id/points (ProxyReq) returns (ProxyResp)
+
+	@doc "骑行记录列表"
+	@handler ListRides
+	get /rides (ProxyReq) returns (ProxyResp)
+
+	@doc "骑行详情"
+	@handler GetRide
+	get /rides/:id (ProxyReq) returns (ProxyResp)
+}
+
+@server (
+	prefix:     /api/v1
+	jwt:        Auth
+	middleware: RateLimit
+	group:      community
+)
+service gateway-api {
+	@doc "社区帖子"
+	@handler GetPosts
+	get /posts (ProxyReq) returns (ProxyResp)
+
+	@doc "路书列表"
+	@handler GetRouteBooks
+	get /route-books (ProxyReq) returns (ProxyResp)
+}
+

@@ -1,0 +1,14 @@
+Name: gateway-api
+Host: 0.0.0.0
+Port: 8080
+Auth:
+  AccessSecret: dev-secret
+  AccessExpire: 2592000
+UserServiceUrl: http://user-service:8001
+RideServiceUrl: http://ride-service:8002
+CommunityServiceUrl: http://community-service:8003
+RedisAddr: redis:6379
+RateLimit:
+  WindowSec: 60
+  GlobalPerIP: 200
+  AuthPerIP: 20
