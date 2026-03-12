@@ -1,0 +1,33 @@
+# 编译产物
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# 构建目录
+/bin/
+/dist/
+
+# 环境变量
+.env
+.env.*
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Go workspace
+go.work.sum
+
+# 日志
+*.log

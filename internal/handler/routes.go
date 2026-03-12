@@ -31,29 +31,54 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				Path:    "/auth/register",
 				Handler: auth.RegisterHandler(serverCtx),
 			},
+			{
+				// 发送验证码
+				Method:  http.MethodPost,
+				Path:    "/auth/send-otp",
+				Handler: auth.SendOTPHandler(serverCtx),
+			},
+			{
+				// 验证码登录/注册
+				Method:  http.MethodPost,
+				Path:    "/auth/verify-otp",
+				Handler: auth.VerifyOTPHandler(serverCtx),
+			},
 		},
 		rest.WithPrefix("/api/v1"),
 	)
 
+	// ── community：公开路由（无 JWT 要求）
 	server.AddRoutes(
 		rest.WithMiddlewares(
 			[]rest.Middleware{serverCtx.RateLimit},
 			[]rest.Route{
-				{
-					// 社区帖子
-					Method:  http.MethodGet,
-					Path:    "/posts",
-					Handler: community.GetPostsHandler(serverCtx),
-				},
-				{
-					// 路书列表
-					Method:  http.MethodGet,
-					Path:    "/route-books",
-					Handler: community.GetRouteBooksHandler(serverCtx),
-				},
+				{Method: http.MethodGet, Path: "/posts", Handler: community.GetPostsHandler(serverCtx)},
+				{Method: http.MethodGet, Path: "/route-books", Handler: community.GetRouteBooksHandler(serverCtx)},
+				{Method: http.MethodGet, Path: "/route-books/:id", Handler: community.GetRouteBookHandler(serverCtx)},
+				{Method: http.MethodGet, Path: "/route-books/:id/comments", Handler: community.GetCommentsHandler(serverCtx)},
 			}...,
 		),
-		rest.WithJwt(serverCtx.Config.Auth.AccessSecret),
+		rest.WithPrefix("/api/v1"),
+	)
+
+	// ── community：需要 JWT 的路由
+	server.AddRoutes(
+		rest.WithMiddlewares(
+			[]rest.Middleware{serverCtx.RateLimit},
+			[]rest.Route{
+				{Method: http.MethodPost,   Path: "/rides/:id/to-route-book",       Handler: community.CreateRouteBookFromRideHandler(serverCtx)},
+				{Method: http.MethodPatch,  Path: "/route-books/:id",               Handler: community.UpdateRouteBookHandler(serverCtx)},
+				{Method: http.MethodDelete, Path: "/route-books/:id",               Handler: community.DeleteRouteBookHandler(serverCtx)},
+				{Method: http.MethodPost,   Path: "/route-books/:id/like",          Handler: community.LikeRouteBookHandler(serverCtx)},
+				{Method: http.MethodDelete, Path: "/route-books/:id/like",          Handler: community.UnlikeRouteBookHandler(serverCtx)},
+				{Method: http.MethodPost,   Path: "/route-books/:id/favorite",      Handler: community.FavoriteRouteBookHandler(serverCtx)},
+				{Method: http.MethodDelete, Path: "/route-books/:id/favorite",      Handler: community.UnfavoriteRouteBookHandler(serverCtx)},
+				{Method: http.MethodPost,   Path: "/route-books/:id/comments",      Handler: community.PostCommentHandler(serverCtx)},
+				{Method: http.MethodDelete, Path: "/route-books/:id/comments/:cid", Handler: community.DeleteCommentHandler(serverCtx)},
+				{Method: http.MethodGet,    Path: "/users/me/route-books",          Handler: community.MyRouteBooksHandler(serverCtx)},
+				{Method: http.MethodGet,    Path: "/users/me/favorites",            Handler: community.MyFavoritesHandler(serverCtx)},
+			}...,
+		),
 		rest.WithPrefix("/api/v1"),
 	)
 
@@ -142,6 +167,24 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 					Handler: vehicle.SelectVehicleHandler(serverCtx),
 				},
 				{
+					// 修改座驾昵称
+					Method:  http.MethodPut,
+					Path:    "/vehicles/:id",
+					Handler: vehicle.UpdateVehicleHandler(serverCtx),
+				},
+				{
+					// 删除座驾
+					Method:  http.MethodDelete,
+					Path:    "/vehicles/:id",
+					Handler: vehicle.DeleteVehicleHandler(serverCtx),
+				},
+				{
+					// 切换当前座驾
+					Method:  http.MethodPost,
+					Path:    "/vehicles/:id/activate",
+					Handler: vehicle.ActivateVehicleHandler(serverCtx),
+				},
+				{
 					// 我的座驾
 					Method:  http.MethodGet,
 					Path:    "/vehicles/mine",
@@ -152,6 +195,12 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 					Method:  http.MethodGet,
 					Path:    "/vehicles/models",
 					Handler: vehicle.GetVehicleModelsHandler(serverCtx),
+				},
+				{
+					// 我的座驾列表
+					Method:  http.MethodGet,
+					Path:    "/vehicles/my-list",
+					Handler: vehicle.ListMyVehiclesHandler(serverCtx),
 				},
 			}...,
 		),

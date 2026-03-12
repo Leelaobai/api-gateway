@@ -19,6 +19,14 @@ service gateway-api {
 	@doc "登录"
 	@handler Login
 	post /auth/login (ProxyReq) returns (ProxyResp)
+
+	@doc "发送验证码"
+	@handler SendOTP
+	post /auth/send-otp (ProxyReq) returns (ProxyResp)
+
+	@doc "验证码登录/注册"
+	@handler VerifyOTP
+	post /auth/verify-otp (ProxyReq) returns (ProxyResp)
 }
 
 // ===== 需要 JWT 的路由 =====
@@ -40,6 +48,22 @@ service gateway-api {
 	@doc "我的座驾"
 	@handler GetMyVehicle
 	get /vehicles/mine (ProxyReq) returns (ProxyResp)
+
+	@doc "我的座驾列表"
+	@handler ListMyVehicles
+	get /vehicles/my-list (ProxyReq) returns (ProxyResp)
+
+	@doc "修改座驾昵称"
+	@handler UpdateVehicle
+	put /vehicles/:id (ProxyReq) returns (ProxyResp)
+
+	@doc "删除座驾"
+	@handler DeleteVehicle
+	delete /vehicles/:id (ProxyReq) returns (ProxyResp)
+
+	@doc "切换当前座驾"
+	@handler ActivateVehicle
+	post /vehicles/:id/activate (ProxyReq) returns (ProxyResp)
 }
 
 @server (
@@ -96,16 +120,15 @@ service gateway-api {
 
 @server (
 	prefix:     /api/v1
-	jwt:        Auth
 	middleware: RateLimit
 	group:      community
 )
 service gateway-api {
-	@doc "社区帖子"
+	@doc "社区帖子（未登录可访问，登录后预留推荐信息流）"
 	@handler GetPosts
 	get /posts (ProxyReq) returns (ProxyResp)
 
-	@doc "路书列表"
+	@doc "路书列表（未登录可访问，登录后预留推荐信息流）"
 	@handler GetRouteBooks
 	get /route-books (ProxyReq) returns (ProxyResp)
 }
