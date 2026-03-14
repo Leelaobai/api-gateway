@@ -53,9 +53,14 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 			[]rest.Middleware{serverCtx.RateLimit},
 			[]rest.Route{
 				{Method: http.MethodGet, Path: "/posts", Handler: community.GetPostsHandler(serverCtx)},
+				{Method: http.MethodGet, Path: "/posts/by-user/:id", Handler: community.GetUserPostsHandler(serverCtx)},
+				{Method: http.MethodGet, Path: "/posts/:id", Handler: community.GetPostDetailHandler(serverCtx)},
+				{Method: http.MethodGet, Path: "/posts/:id/comments", Handler: community.GetCommentsHandler(serverCtx)},
 				{Method: http.MethodGet, Path: "/route-books", Handler: community.GetRouteBooksHandler(serverCtx)},
 				{Method: http.MethodGet, Path: "/route-books/:id", Handler: community.GetRouteBookHandler(serverCtx)},
 				{Method: http.MethodGet, Path: "/route-books/:id/comments", Handler: community.GetCommentsHandler(serverCtx)},
+				{Method: http.MethodGet, Path: "/users/:id/profile", Handler: community.GetUserProfileHandler(serverCtx)},
+				{Method: http.MethodGet, Path: "/oss/signed-url", Handler: community.GetOssSignedUrlHandler(serverCtx)},
 			}...,
 		),
 		rest.WithPrefix("/api/v1"),
@@ -66,6 +71,7 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 		rest.WithMiddlewares(
 			[]rest.Middleware{serverCtx.RateLimit},
 			[]rest.Route{
+				// 路书（已接入）
 				{Method: http.MethodPost,   Path: "/rides/:id/to-route-book",       Handler: community.CreateRouteBookFromRideHandler(serverCtx)},
 				{Method: http.MethodPatch,  Path: "/route-books/:id",               Handler: community.UpdateRouteBookHandler(serverCtx)},
 				{Method: http.MethodDelete, Path: "/route-books/:id",               Handler: community.DeleteRouteBookHandler(serverCtx)},
@@ -77,6 +83,21 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				{Method: http.MethodDelete, Path: "/route-books/:id/comments/:cid", Handler: community.DeleteCommentHandler(serverCtx)},
 				{Method: http.MethodGet,    Path: "/users/me/route-books",          Handler: community.MyRouteBooksHandler(serverCtx)},
 				{Method: http.MethodGet,    Path: "/users/me/favorites",            Handler: community.MyFavoritesHandler(serverCtx)},
+
+				// 社区帖子
+				{Method: http.MethodPost,   Path: "/posts",                         Handler: community.CreatePostHandler(serverCtx)},
+				{Method: http.MethodDelete, Path: "/posts/:id",                     Handler: community.DeletePostHandler(serverCtx)},
+				{Method: http.MethodPost,   Path: "/posts/:id/like",                Handler: community.LikePostHandler(serverCtx)},
+				{Method: http.MethodDelete, Path: "/posts/:id/like",                Handler: community.UnlikePostHandler(serverCtx)},
+				{Method: http.MethodPost,   Path: "/posts/:id/comments",            Handler: community.AddPostCommentHandler(serverCtx)},
+				{Method: http.MethodDelete, Path: "/posts/:id/comments/:cid",       Handler: community.DeletePostCommentHandler(serverCtx)},
+
+				// 关注关系
+				{Method: http.MethodPost,   Path: "/users/:id/follow",              Handler: community.FollowUserHandler(serverCtx)},
+				{Method: http.MethodDelete, Path: "/users/:id/follow",              Handler: community.UnfollowUserHandler(serverCtx)},
+
+				// OSS 预签名
+				{Method: http.MethodPost,   Path: "/oss/presign",                   Handler: community.OssPresignHandler(serverCtx)},
 			}...,
 		),
 		rest.WithPrefix("/api/v1"),

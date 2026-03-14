@@ -2,8 +2,8 @@ syntax = "v1"
 
 // ===== 公共类型 =====
 type (
-	ProxyReq  {}
-	ProxyResp  {}
+	ProxyReq  struct{}
+	ProxyResp struct{}
 )
 
 // ===== 无需 JWT 的路由（注册/登录） =====
@@ -131,5 +131,57 @@ service gateway-api {
 	@doc "路书列表（未登录可访问，登录后预留推荐信息流）"
 	@handler GetRouteBooks
 	get /route-books (ProxyReq) returns (ProxyResp)
+
+	@doc "用户主页（未登录可访问，登录后可带 is_following）"
+	@handler GetUserProfile
+	get /users/:id/profile (ProxyReq) returns (ProxyResp)
+
+	@doc "某用户的动态列表（未登录可访问，本人可看私密动态）"
+	@handler GetUserPosts
+	get /posts/by-user/:id (ProxyReq) returns (ProxyResp)
 }
 
+// 社区写接口（需要 JWT）
+@server (
+	prefix:     /api/v1
+	jwt:        Auth
+	middleware: RateLimit
+	group:      communityProtected
+)
+service gateway-api {
+	@doc "发布动态"
+	@handler CreatePost
+	post /posts (ProxyReq) returns (ProxyResp)
+
+	@doc "删除动态"
+	@handler DeletePost
+	delete /posts/:id (ProxyReq) returns (ProxyResp)
+
+	@doc "点赞动态"
+	@handler LikePost
+	post /posts/:id/like (ProxyReq) returns (ProxyResp)
+
+	@doc "取消点赞动态"
+	@handler UnlikePost
+	delete /posts/:id/like (ProxyReq) returns (ProxyResp)
+
+	@doc "添加评论"
+	@handler AddPostComment
+	post /posts/:id/comments (ProxyReq) returns (ProxyResp)
+
+	@doc "删除评论"
+	@handler DeletePostComment
+	delete /posts/:id/comments/:cid (ProxyReq) returns (ProxyResp)
+
+	@doc "关注用户"
+	@handler FollowUser
+	post /users/:id/follow (ProxyReq) returns (ProxyResp)
+
+	@doc "取消关注用户"
+	@handler UnfollowUser
+	delete /users/:id/follow (ProxyReq) returns (ProxyResp)
+
+	@doc "获取图片上传预签名 URL"
+	@handler OssPresign
+	post /oss/presign (ProxyReq) returns (ProxyResp)
+}
